@@ -4,31 +4,46 @@
     <meta charset="UTF-8">
     <title>Telegram WebApp</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        // Автоматическая отправка данных при загрузке
+        Telegram.WebApp.ready();
+
+        function sendData() {
+            const initData = Telegram.WebApp.initDataUnsafe;
+
+            // Проверка наличия обязательных данных
+            if (!initData || !initData.query_id) {
+                alert('Error: Missing Telegram init data!');
+                return;
+            }
+
+            const data = {
+                userId: initData.user?.id || 0,
+                firstName: initData.user?.first_name || '',
+                lastName: initData.user?.last_name || '',
+                username: initData.user?.username || '',
+                authDate: initData.auth_date || '',
+                queryId: initData.query_id || '',
+                chatId: Telegram.WebApp.chatId || 0
+            };
+
+            console.log('Sending data:', data);
+
+            // Отправка данных
+            Telegram.WebApp.sendData(JSON.stringify(data), {
+                url: "https://test-task-mitrokhin-3-production.up.railway.app/api/webhook"
+            });
+
+            // Закрытие WebApp через 1 секунду
+            setTimeout(() => Telegram.WebApp.close(), 1000);
+        }
+
+        // Отправляем данные сразу при загрузке
+        document.addEventListener('DOMContentLoaded', sendData);
+    </script>
 </head>
 <body>
-<h1>Send Data to Spring Boot</h1>
-<button onclick="sendData()">Send My Data</button>
-
-<script>
-    function sendData() {
-        const initData = Telegram.WebApp.initDataUnsafe;
-        const data = {
-            userId: initData.user?.id,
-            firstName: initData.user?.first_name,
-            lastName: initData.user?.last_name,
-            username: initData.user?.username,
-            authDate: initData.auth_date,
-            queryId: initData.query_id,
-            chatId: Telegram.WebApp.chatId
-        };
-
-        // Отправляем данные в ваше Spring Boot приложение
-        Telegram.WebApp.sendData(JSON.stringify(data), {
-            url: "https://test-task-mitrokhin-3-production.up.railway.app/api/webhook"
-        });
-
-        Telegram.WebApp.close();
-    }
-</script>
+<h1>Sending data to server...</h1>
+<p>Please wait, this window will close automatically.</p>
 </body>
 </html>
