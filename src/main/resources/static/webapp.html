@@ -1,118 +1,49 @@
 <!DOCTYPE html>
 <html>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telegram Data Sender</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-            background-color: #f0f2f5;
-        }
-        .container {
-            max-width: 400px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        button {
-            background-color: #0088cc;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        .status {
-            margin-top: 20px;
-            color: #666;
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h2>Send Your Telegram Data</h2>
-    <p>Click the button below to send your Telegram information to the server.</p>
+    <script>
+        // Основная функция отправки данных
+        function sendData() {
+            const webApp = Telegram.WebApp;
 
-    <button id="sendButton">Send Data</button>
-
-    <div id="status" class="status">Ready to send data...</div>
-</div>
-
-<script>
-    // Инициализация WebApp
-    const webApp = Telegram.WebApp;
-    webApp.ready();
-    webApp.expand();
-
-    const statusElement = document.getElementById('status');
-    const sendButton = document.getElementById('sendButton');
-
-    // Функция для сбора данных
-    function collectData() {
-        // const initData = webApp.initDataUnsafe;
-        const initData = window.Telegram.WebApp.initData;
-
-
-        return {
-            userId: initData.user?.id || 0,
-            firstName: initData.user?.first_name || '',
-            lastName: initData.user?.last_name || '',
-            username: initData.user?.username || '',
-            authDate: initData.auth_date || '',
-            queryId: initData.query_id || '',
-            chatId: webApp.chatId || 0,
-            platform: webApp.platform,
-            version: webApp.version
-        };
-    }
-
-    // Функция отправки данных
-    function sendData() {
-        try {
-            statusElement.textContent = 'Collecting data...';
-            const data = collectData();
-
-            // Проверка обязательных данных
-            if (!data.queryId) {
-                statusElement.textContent = 'Error: Missing Telegram init data!';
+            // Проверка инициализации WebApp
+            if (!webApp.initDataUnsafe || !webApp.initDataUnsafe.query_id) {
+                console.error('Telegram WebApp not initialized properly');
                 return;
             }
 
-            statusElement.textContent = 'Sending data to server...';
-            console.log('Sending data:', data);
+            // Сбор данных
+            const initData = webApp.initDataUnsafe;
+            const data = {
+                userId: initData.user?.id || 0,
+                firstName: initData.user?.first_name || '',
+                lastName: initData.user?.last_name || '',
+                username: initData.user?.username || '',
+                authDate: initData.auth_date || '',
+                queryId: initData.query_id || '',
+                chatId: webApp.chatId || 0,
+                platform: webApp.platform,
+                version: webApp.version
+            };
+
+            console.log('Collected data:', data);
 
             // Отправка данных через Telegram API
-            webApp.sendData(JSON.stringify(data), {
-                url: "https://test-task-mitrokhin-3-production.up.railway.app/webhook"
-            });
-
-            statusElement.textContent = 'Data sent successfully! Closing in 3 seconds...';
-
-            // Закрытие WebApp через 3 секунды
-            setTimeout(() => {
-                webApp.close();
-            }, 3000);
-
-        } catch (error) {
-            console.error('Error sending data:', error);
-            statusElement.textContent = 'Error: ' + error.message;
+            webApp.sendData(JSON.stringify(data));
+            webApp.close();
         }
-    }
 
-    // Назначение обработчика кнопки
-    sendButton.addEventListener('click', sendData);
-
-    // Автоматическая отправка при загрузке (закомментируйте если не нужно)
-    // setTimeout(sendData, 1000);
-</script>
+        // Инициализация и отправка данных
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand(); // Раскрываем на весь экран
+        sendData();
+    </script>
+</head>
+<body>
+<h1>Sending your data to server...</h1>
+<p>Please wait, the window will close automatically.</p>
 </body>
 </html>
